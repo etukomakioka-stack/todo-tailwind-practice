@@ -31,8 +31,12 @@ deleteBtn.textContent = "削除";
 const backBtn = document.createElement("button");
 backBtn.textContent = "戻る";
 
+const completeBtn = document.createElement("button");
+completeBtn.textContent = "完了";
+
     menu.appendChild(deleteBtn);
     menu.appendChild(backBtn);
+    menu.appendChild(completeBtn);
     list.appendChild(menu);
     
 
@@ -51,6 +55,13 @@ backBtn.addEventListener("click", function (e) {
 deleteBtn.addEventListener("click", function (e) {
     e.stopPropagation();
     list.remove();
+});
+
+  //完了
+completeBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    list.classList.toggle("completed");
+    menu.classList.add("hidden");
 });
 
 todoinput.value = "";
