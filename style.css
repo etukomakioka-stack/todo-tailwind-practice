@@ -1,0 +1,21 @@
+
+.todo-menu{
+    display: flex;
+    flex-direction: column;
+
+}
+
+.hidden{
+    display: none;
+}
+
+.todo-item{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    background-color: aquamarine;
+}
+
+.text{
+    color: brown;
+}
