@@ -12,8 +12,17 @@
 .todo-item{
     display: flex;
     flex-direction: row;
+}
+
+
+#todo-list{
+    display: flex;
+    flex-direction: column;
     gap: 10px;
 }
 
 
-
+.todo-item.completed .text{
+    text-decoration: line-through;
+    color: hotpink;
+}
