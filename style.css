@@ -2,27 +2,49 @@
 .todo-menu{
     display: flex;
     flex-direction: column;
-
+    font-size: 17px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
 
 .hidden{
     display: none;
 }
 
-.todo-item{
-    display: flex;
-    flex-direction: row;
+.todo-input{
+    gap: 20px;
 }
-
 
 #todo-list{
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin: 10px;
 }
+
+.todo-item{
+    display: flex;
+    flex-direction: row;
+    font-size: 19px;
+}
+
+.text{
+    margin-right: 12px;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+}
+
 
 
 .todo-item.completed .text{
     text-decoration: line-through;
-    color: hotpink;
+    text-decoration-style: wavy;
+    color: rgb(255, 105, 130);
 }
+
+#flower{
+    font-size: 65px;
+}
+
+#flower-message{
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: grey;
+}   
