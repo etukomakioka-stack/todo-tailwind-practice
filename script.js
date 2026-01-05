@@ -181,3 +181,8 @@ loadTodos();
 resetAtMidnight();
 
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js")
+    .then(() => console.log("Service Worker 登録成功"))
+    .catch((err) => console.log("SW 登録失敗", err));
+}
