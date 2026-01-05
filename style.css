@@ -10,20 +10,18 @@
     display: none;
 }
 
-.todo-input{
-    gap: 20px;
-}
 
 #todo-list{
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin: 10px;
+    justify-content: center;
+    gap: 20px;
 }
 
 .todo-item{
     display: flex;
     flex-direction: row;
+    justify-content: center;
     font-size: 19px;
 }
 
@@ -36,15 +34,41 @@
 
 .todo-item.completed .text{
     text-decoration: line-through;
-    text-decoration-style: wavy;
+    font-weight: 500;
     color: rgb(255, 105, 130);
 }
 
-#flower{
-    font-size: 65px;
-}
+
 
 #flower-message{
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     color: grey;
 }   
+
+#flower {
+font-size: 64px;
+cursor: pointer;
+display: inline-block;
+
+animation: sway 3s ease-in-out infinite;
+transform-origin: bottom center;
+}
+
+/* 咲くときだけ */
+.bloom {
+animation: bloom 0.4s ease;
+}
+
+@keyframes sway {
+0%   { transform: rotate(0deg); }
+25%  { transform: rotate(5deg); }
+50%  { transform: rotate(0deg); }
+75%  { transform: rotate(-5deg); }
+100% { transform: rotate(0deg); }
+}
+
+@keyframes bloom {
+0%   { transform: scale(0.8); }
+50%  { transform: scale(1.2); }
+100% { transform: scale(1); }
+}
