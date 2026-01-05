@@ -186,3 +186,4 @@ if ("serviceWorker" in navigator) {
     .then(() => console.log("Service Worker 登録成功"))
     .catch((err) => console.log("SW 登録失敗", err));
 }
+y
