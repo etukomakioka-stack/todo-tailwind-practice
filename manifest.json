@@ -1,11 +1,11 @@
 
 {
-"name": "Todo Flower",
+"name": "Flower Todo",
 "short_name": "Todo",
 "start_url": "./index.html",
 "display": "standalone",
 "background_color": "#ffffff",
-"theme_color": "#ffffff",
+"theme_color": "#ffb6c1",
 "icons": [
     {
     "src": "icon-192.png",
