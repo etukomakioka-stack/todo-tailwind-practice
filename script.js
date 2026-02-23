@@ -89,13 +89,16 @@ function createTodo(textValue, isCompleted = false) {
   });
 }
 
-/* ===== 追加ボタン ===== */
 addbutton.addEventListener("click", () => {
-  if (todoinput.value.trim() === "") return;
-  createTodo(todoinput.value);
+  const text = todoinput.value.trim();
+  if (text === "") return;
+
+  createTodo(text);
   todoinput.value = "";
   updateFlower();
   saveTodos();
+
+  testSend(text);
 });
 
 /* ===== 花 ===== */
@@ -180,9 +183,26 @@ function loadTodos() {
 loadTodos();
 resetAtMidnight();
 
-
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js")
+  navigator.serviceWorker
+    .register("./sw.js")
     .then(() => console.log("Service Worker 登録成功"))
     .catch((err) => console.log("SW 登録失敗", err));
+}
+async function testSend(todoText) {
+  try {
+    const response = await fetch("http://192.168.1.97:3000/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: todoText, // ここを実際の内容に変える
+      }),
+    });
+    const result = await response.json();
+    console.log("サーバーからの返事:", result.message);
+  } catch (err) {
+    console.error("送信失敗したぞ:", err);
+  }
 }
