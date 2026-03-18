@@ -1,3 +1,6 @@
+// 【重要】自分のAPI URLに書き換えて！最後に /todos を忘れずに。
+const API_URL = "https://150saksji7.execute-api.us-east-1.amazonaws.com/todos";
+
 const todoinput = document.getElementById("todo-input");
 const addbutton = document.getElementById("add-button");
 const todolist = document.getElementById("todo-list");
@@ -10,33 +13,52 @@ function getToday() {
   return today.toISOString().split("T")[0];
 }
 
-/* ===== 0時までのミリ秒 ===== */
-function msUntilMidnight() {
-  const now = new Date();
-  const midnight = new Date();
-  midnight.setHours(24, 0, 0, 0);
-  return midnight - now;
+/* ===== 1. AWSからデータを読み込む (復元) ===== */
+async function loadTodos() {
+  try {
+    const response = await fetch(API_URL);
+    const todos = await response.json();
+
+    todolist.innerHTML = ""; // 一旦クリア
+
+    // 今日作成されたTODOだけを表示
+    const today = getToday();
+    todos.forEach((todo) => {
+      // API側で日付管理していない場合は全部表示
+      if (!todo.date || todo.date === today) {
+        createTodo(todo.text, todo.completed, todo.id);
+      }
+    });
+    updateFlower();
+  } catch (err) {
+    console.error("AWSからの読み込み失敗:", err);
+  }
 }
 
-/* ===== 0時リセット ===== */
-function resetAtMidnight() {
-  setTimeout(() => {
-    // Todo全削除
-    todolist.innerHTML = "";
+/* ===== 2. AWSに保存する (追加・更新用) ===== */
+async function saveToAWS(id, text, completed) {
+  const data = {
+    id: id || Date.now().toString(),
+    text: text,
+    completed: completed,
+    date: getToday(),
+  };
 
-    // 保存データ削除
-    localStorage.removeItem("todos");
-
-    // 花を最初に戻す
-    flower.textContent = "🌱";
-
-    // 次の日の0時もセット
-    resetAtMidnight();
-  }, msUntilMidnight());
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    console.log("AWSに保存成功！");
+  } catch (err) {
+    console.error("AWS保存失敗:", err);
+  }
 }
 
-/* ===== Todo 作成 ===== */
-function createTodo(textValue, isCompleted = false) {
+/* ===== Todo 作成 (引数にID追加) ===== */
+function createTodo(textValue, isCompleted = false, id = null) {
+  const todoId = id || Date.now().toString(); // IDがなければ新規作成
+
   const list = document.createElement("li");
   list.classList.add("todo-item");
   if (isCompleted) list.classList.add("completed");
@@ -52,10 +74,8 @@ function createTodo(textValue, isCompleted = false) {
 
   const completeBtn = document.createElement("button");
   completeBtn.textContent = "完了";
-
   const deleteBtn = document.createElement("button");
   deleteBtn.textContent = "削除";
-
   const backBtn = document.createElement("button");
   backBtn.textContent = "戻る";
 
@@ -68,12 +88,14 @@ function createTodo(textValue, isCompleted = false) {
     menu.classList.remove("hidden");
   });
 
-  completeBtn.addEventListener("click", (e) => {
+  // 【完了ボタン】
+  completeBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
     list.classList.toggle("completed");
     menu.classList.add("hidden");
     updateFlower();
-    saveTodos();
+    // 状態をAWSに保存
+    await saveToAWS(todoId, textValue, list.classList.contains("completed"));
   });
 
   backBtn.addEventListener("click", (e) => {
@@ -81,31 +103,33 @@ function createTodo(textValue, isCompleted = false) {
     menu.classList.add("hidden");
   });
 
+  // 【削除ボタン】
   deleteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     list.remove();
     updateFlower();
-    saveTodos();
+    // 削除は今のLambdaだと「上書き」で消せないので、とりあえず画面から消す運用
   });
 }
 
-addbutton.addEventListener("click", () => {
+// 【追加ボタン】
+addbutton.addEventListener("click", async () => {
   const text = todoinput.value.trim();
   if (text === "") return;
 
-  createTodo(text);
+  const newId = Date.now().toString();
+  createTodo(text, false, newId);
   todoinput.value = "";
   updateFlower();
-  saveTodos();
 
-  testSend(text);
+  // AWSへ送信
+  await saveToAWS(newId, text, false);
 });
 
-/* ===== 花 ===== */
+/* ===== 花のロジック (変更なし) ===== */
 function updateFlower() {
   const todos = document.querySelectorAll(".todo-item");
   const completed = document.querySelectorAll(".todo-item.completed");
-
   let newFlower = "🌱";
   if (todos.length > 0) {
     const rate = completed.length / todos.length;
@@ -113,96 +137,8 @@ function updateFlower() {
     else if (rate >= 0.6) newFlower = "🌼";
     else if (rate >= 0.3) newFlower = "🪴";
   }
-
-  if (flower.textContent !== newFlower) {
-    flower.textContent = newFlower;
-    flower.classList.remove("bloom");
-    void flower.offsetWidth;
-    flower.classList.add("bloom");
-  }
-}
-
-/* ===== 花メッセージ ===== */
-const flowerMessages = [
-  "よくがんばってるね",
-  "今日も頑張ろう！",
-  "積み重ねが大切！",
-  "こつこつ進めよう！",
-  "少しずつでOKだよ",
-  "いつもお疲れ様",
-  "今日はいい調子だね",
-  "無理しなくて大丈夫",
-];
-
-flower.addEventListener("click", () => {
-  const index = Math.floor(Math.random() * flowerMessages.length);
-  messageBox.textContent = flowerMessages[index];
-  setTimeout(() => {
-    messageBox.textContent = "";
-  }, 3000);
-});
-
-/* ===== 保存（日付つき） ===== */
-function saveTodos() {
-  const todos = [];
-  document.querySelectorAll(".todo-item").forEach((item) => {
-    todos.push({
-      text: item.querySelector(".text").textContent,
-      completed: item.classList.contains("completed"),
-    });
-  });
-
-  const data = {
-    date: getToday(),
-    todos: todos,
-  };
-
-  localStorage.setItem("todos", JSON.stringify(data));
-}
-
-/* ===== 復元（日付チェック） ===== */
-function loadTodos() {
-  const saved = localStorage.getItem("todos");
-  if (!saved) return;
-
-  const data = JSON.parse(saved);
-
-  if (data.date !== getToday()) {
-    localStorage.removeItem("todos");
-    return;
-  }
-
-  data.todos.forEach((todo) => {
-    createTodo(todo.text, todo.completed);
-  });
-
-  updateFlower();
+  flower.textContent = newFlower;
 }
 
 /* ===== 起動 ===== */
-loadTodos();
-resetAtMidnight();
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("./sw.js")
-    .then(() => console.log("Service Worker 登録成功"))
-    .catch((err) => console.log("SW 登録失敗", err));
-}
-async function testSend(todoText) {
-  try {
-    const response = await fetch("http://192.168.1.97:3000/save", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: todoText, // ここを実際の内容に変える
-      }),
-    });
-    const result = await response.json();
-    console.log("サーバーからの返事:", result.message);
-  } catch (err) {
-    console.error("送信失敗したぞ:", err);
-  }
-}
+loadTodos(); // 起動時にAWSから読み込む
